@@ -3,6 +3,7 @@ package Shoppingcart.application;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
+import java.util.List;
 
 import Shoppingcart.domain.ShoppingCart;
 import Shoppingcart.domain.ShoppingCartEvent.ItemAdded;
