@@ -13,7 +13,7 @@ import akka.Done;
 public class ShoppingCartEntityTest {
 
     private final ShoppingCart.LineItem hynixRAM = 
-        new ShoppingCart.LineItem("16GB-RAM", "Hynix RAM - 16 GB", 1);
+        new ShoppingCart.LineItem("16GB-RAM", "Hynix RAM - 16 GB", 10);
 
     @Test
     public void testAddLineItem() {
