@@ -26,12 +26,14 @@ public class ActiveCartsEndpoint extends AbstractHttpEndpoint {
   }
 
   @Get
-  public HttpResponse list() {
-    logger.info("Listing active carts");
+  public HttpResponse list(Integer limit, Integer offset) {
+    int l = (limit == null || limit <= 0 || limit > 100) ? 50 : limit; // default 50, cap 100
+    int o = (offset == null || offset < 0) ? 0 : offset;
+    logger.info("Listing active carts, limit={}, offset={}", l, o);
     ActiveCartEntries entries = componentClient
         .forView()
         .method(ActiveCartsView::listActiveCarts)
-        .invoke();
+        .invoke(l, o);
     return HttpResponses.ok(entries);
   }
 
@@ -45,13 +47,8 @@ public class ActiveCartsEndpoint extends AbstractHttpEndpoint {
 
     if (entries.activecarts() == null || entries.activecarts().isEmpty()) {
       return HttpResponses.notFound();
-    } else if (entries.activecarts().size() == 1) {
-      ActiveCartEntry entry = entries.activecarts().getFirst();
-      return HttpResponses.ok(entry);
     } else {
-      // Should not normally happen (cartId is unique), but return the list if multiple exist
       return HttpResponses.ok(entries);
     }
   }
 }
-

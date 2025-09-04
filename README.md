@@ -131,6 +131,8 @@ The following API endpoints are available:
 
 -   `GET /activecarts`
     -   Lists active carts from the `active_carts` view ordered by most recent activity.
+    -   Pagination: `limit` (default 50, max 100), `offset` (default 0).
+    -   Example: `/activecarts?limit=20&offset=40`
     -   Response example:
         ```json
         { "activecarts": [ { "cartId": "cart-1", "lastUpdated": 1725460000000 } ] }

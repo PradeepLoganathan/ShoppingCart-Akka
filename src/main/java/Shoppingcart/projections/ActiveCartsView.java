@@ -30,8 +30,8 @@ public class ActiveCartsView extends View {
     }
   }
 
-  @Query("SELECT * as activecarts FROM active_carts ORDER BY lastUpdated DESC")
-  public QueryEffect<ActiveCartEntries> listActiveCarts() {
+  @Query("SELECT * as activecarts FROM active_carts ORDER BY lastUpdated DESC LIMIT :limit OFFSET :offset")
+  public QueryEffect<ActiveCartEntries> listActiveCarts(int limit, int offset) {
     return queryResult();
   }
 
