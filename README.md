@@ -8,23 +8,35 @@ This project uses Akka Persistence to implement event sourcing. When a command i
 
 Akka Persistence also provides support for snapshots, which are used to optimize the recovery process. Instead of replaying all events from the beginning of time, the entity can be restored from the latest snapshot and then only replay the events that have occurred since the snapshot was taken.
 
-Here is a diagram that illustrates the event sourcing flow:
+Here is a diagram that illustrates the event sourcing flow with the Active Carts view/projection:
 
 ```mermaid
 sequenceDiagram
     participant Client
+    participant ShoppingCartEndpoint
+    participant ActiveCartsEndpoint
     participant ShoppingCartEntity
     participant Journal
     participant SnapshotStore
+    participant ActiveCartsView
+    participant ViewTable as active_carts
 
-    Client->>ShoppingCartEntity: Command (e.g., AddItem)
-    ShoppingCartEntity->>Journal: Persist Event (e.g., ItemAdded)
-    Journal-->>ShoppingCartEntity: Event Persisted
-    ShoppingCartEntity->>ShoppingCartEntity: Apply Event to State
+    Client->>ShoppingCartEndpoint: Command (AddItem/Remove/Checkout)
+    ShoppingCartEndpoint->>ShoppingCartEntity: Invoke command
+    ShoppingCartEntity->>Journal: Persist Event (ItemAdded/Removed/CheckedOut)
+    Journal-->>ShoppingCartEntity: Event persisted
+    ShoppingCartEntity->>ShoppingCartEntity: Apply event to state
+    ShoppingCartEntity-->>ActiveCartsView: Event stream (consume)
+    ActiveCartsView->>ViewTable: Upsert/Delete row
     alt Every N events
-        ShoppingCartEntity->>SnapshotStore: Save Snapshot
+        ShoppingCartEntity->>SnapshotStore: Save snapshot
     end
     ShoppingCartEntity-->>Client: Confirmation
+
+    Client->>ActiveCartsEndpoint: GET /activecarts(/:cartId)
+    ActiveCartsEndpoint->>ActiveCartsView: Query list/get
+    ActiveCartsView-->>ActiveCartsEndpoint: Rows
+    ActiveCartsEndpoint-->>Client: JSON response
 ```
 
 ## Project Structure
@@ -71,6 +83,16 @@ sequenceDiagram
 
 -   **`ShoppingCartEndpoint.java`**: This class defines the HTTP endpoints for interacting with the shopping cart. It uses the `ComponentClient` to send commands to the `ShoppingCartEntity`. The `@HttpEndpoint("shoppingcarts")` annotation exposes the endpoints under the `/shoppingcarts` path.
 
+### Views & Projections
+
+-   **`ActiveCartsView.java`**: A View that projects events from `ShoppingCartEntity` into a queryable table `active_carts` (component id `active-carts`).
+    -   On `ItemAdded`/`ItemRemoved`: upserts an `ActiveCartEntry(cartId, lastUpdated)` row.
+    -   On `CartCheckedOut`: deletes the row so the cart is no longer considered active.
+-   **Row models**: `ActiveCartEntry` (cartId, lastUpdated), `ActiveCartEntries` (wrapper for query results).
+-   **Queries**: 
+    -   `listActiveCarts`: `SELECT * as activecarts FROM active_carts ORDER BY lastUpdated DESC`
+    -   `getActiveCart(cartId)`: `SELECT * as activecarts FROM active_carts WHERE cartId = :cartId`
+
 ## Technologies
 
 - Java 21
@@ -104,6 +126,17 @@ The following API endpoints are available:
     -   Checks out the shopping cart. This endpoint sends a `Checkout` command to the `ShoppingCartEntity`.
 -   `GET /shoppingcarts/{cartId}`
     -   Retrieves the contents of the shopping cart. This endpoint sends a `GetCart` command to the `ShoppingCartEntity`.
+
+### Projection-backed endpoints
+
+-   `GET /activecarts`
+    -   Lists active carts from the `active_carts` view ordered by most recent activity.
+    -   Response example:
+        ```json
+        { "activecarts": [ { "cartId": "cart-1", "lastUpdated": 1725460000000 } ] }
+        ```
+-   `GET /activecarts/{cartId}`
+    -   Fetches a single active cart row. Returns 404 if not active or already checked out.
 
 ## Deploying to Akka Platform
 

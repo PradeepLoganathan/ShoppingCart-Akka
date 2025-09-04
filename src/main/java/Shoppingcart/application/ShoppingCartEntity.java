@@ -38,7 +38,7 @@ public class ShoppingCartEntity extends EventSourcedEntity< ShoppingCart, Shoppi
             return effects().error("Quantity must be greater than zero.");
         }
         
-        var event = new ShoppingCartEvent.ItemAdded(item);
+        var event = new ShoppingCartEvent.ItemAdded(this.entityId, item);
         logger.info("Emitting ItemAdded event for cart: {}, item: {}", entityId, item);
         return effects()
                 .persist(event)
@@ -55,7 +55,7 @@ public class ShoppingCartEntity extends EventSourcedEntity< ShoppingCart, Shoppi
             return effects().error("Item not found in the cart.");
         }
         
-        var event = new ShoppingCartEvent.ItemRemoved(productId);
+        var event = new ShoppingCartEvent.ItemRemoved(this.entityId, productId);
         logger.info("Emitting ItemRemoved event for cart: {}, productId: {}", entityId, productId);
         return effects()
                 .persist(event)
@@ -72,7 +72,7 @@ public class ShoppingCartEntity extends EventSourcedEntity< ShoppingCart, Shoppi
             return effects().error("Cannot checkout an empty cart.");
         }
         
-        var event = new ShoppingCartEvent.CartCheckedOut();
+        var event = new ShoppingCartEvent.CartCheckedOut(this.entityId);
         logger.info("Emitting CartCheckedOut event for cart: {}", entityId);
         return effects()
                 .persist(event)

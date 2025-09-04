@@ -1,16 +1,19 @@
 package Shoppingcart.domain;
 
+import Shoppingcart.domain.ShoppingCart.LineItem;
 import akka.javasdk.annotations.TypeName;
 
 public sealed interface ShoppingCartEvent {
 
+    String cartId();
+
     @TypeName("item-added")
-    record ItemAdded(ShoppingCart.LineItem item) implements ShoppingCartEvent {}
+    record ItemAdded(String cartId, LineItem item) implements ShoppingCartEvent {}
 
     @TypeName("item-removed")
-    record ItemRemoved(String productId) implements ShoppingCartEvent {}
+    record ItemRemoved(String cartId, String productId) implements ShoppingCartEvent {}
 
     @TypeName("cart-checked-out")
-    record CartCheckedOut() implements ShoppingCartEvent {}
+    record CartCheckedOut(String cartId) implements ShoppingCartEvent {}
 
 }
