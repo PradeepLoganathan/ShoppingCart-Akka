@@ -27,13 +27,12 @@ public class ActiveCartsEndpoint extends AbstractHttpEndpoint {
 
   @Get
   public HttpResponse list(Integer limit, Integer offset) {
-    int l = (limit == null || limit <= 0 || limit > 100) ? 50 : limit; // default 50, cap 100
-    int o = (offset == null || offset < 0) ? 0 : offset;
-    logger.info("Listing active carts, limit={}, offset={}", l, o);
+   
+    logger.info("Listing active carts");
     ActiveCartEntries entries = componentClient
         .forView()
         .method(ActiveCartsView::listActiveCarts)
-        .invoke(l, o);
+        .invoke();
     return HttpResponses.ok(entries);
   }
 
