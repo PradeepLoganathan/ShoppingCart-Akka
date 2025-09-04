@@ -27,6 +27,33 @@ sequenceDiagram
     ShoppingCartEntity-->>Client: Confirmation
 ```
 
+## Project Structure
+
+```
+.
+├── pom.xml
+└── src
+    ├── main
+    │   ├── java
+    │   │   └── Shoppingcart
+    │   │       ├── api
+    │   │       │   └── ShoppingCartEndpoint.java
+    │   │       ├── application
+    │   │       │   └── ShoppingCartEntity.java
+    │   │       └── domain
+    │   │           ├── ShoppingCart.java
+    │   │           └── ShoppingCartEvent.java
+    │   └── resources
+    │       └── application.conf
+    └── test
+        └── java
+            └── Shoppingcart
+                ├── application
+                │   └── ShoppingCartEntityTest.java
+                └── domain
+                    └── ShoppingCartTest.java
+```
+
 ## Code Overview
 
 ### Domain
@@ -78,46 +105,43 @@ The following API endpoints are available:
 -   `GET /shoppingcarts/{cartId}`
     -   Retrieves the contents of the shopping cart. This endpoint sends a `GetCart` command to the `ShoppingCartEntity`.
 
-## How to Run
+## Deploying to Akka Platform
 
-### To run locally
-
-1. **Build and run:**
-    ```bash
-    mvn compile exec:java
-    ```
-2. **To monitor on local console**
-    ```bash
-    akka local console
-    ```
-3. **You can now monitor your service locally and see its state**
-![alt text](local-console.png)
-
-### To run on the remore platform
 1.  **Build the project:**
+
     ```bash
     mvn clean install
     ```
-    This will create a docker image locally. Note the docker image name.
 
-2.  **Deploy the service**
+    This will create a Docker image locally. Note the Docker image name.
+
+2.  **Deploy the service:**
+
     ```bash
-    akka service deploy shopping-cart-svc shopping-cart:1.0-SNAPSHOT-20250904014201 --push
+    akka service deploy shopping-cart-svc shopping-cart:1.0-SNAPSHOT --push
     ```
-    Deploy the sercuce by calling akka service deploy and passing in the docker image name and pusing it to the container registry with the --push parameter.
 
-3. **Check the service status**
+    Deploy the service by calling `akka service deploy` and passing in the Docker image name and pushing it to the container registry with the `--push` parameter.
+
+3.  **Check the service status:**
+
     ```bash
     akka service list
     ```
-    This will show the status of your service. Wait until the status is `Running`.
-    ```console
-    NAME                AGE     INSTANCES   STATUS   IMAGE TAG                     
-    shopping-cart-svc   2h33m   3           Ready    1.0-SNAPSHOT-20250904014201 
-    ```
-    You can also check it on the Akka Console
-    ![alt text](akka-console.png)
-4. You can also now view the state change and the events that resulted in the state change in the akka console and also on the local console as below.
-![alt text](events-state.png)
-    
 
+    This will show the status of your service. Wait until the status is `Running`.
+
+    ```console
+    NAME                AGE     INSTANCES   STATUS   IMAGE TAG
+    shopping-cart-svc   2h33m   3           Ready    1.0-SNAPSHOT
+    ```
+
+    You can also check it on the Akka Console:
+
+    ![Akka Console](akka-console.png)
+
+4.  **View state changes and events:**
+
+    You can now view the state change and the events that resulted in the state change in the Akka Console and also on the local console as below.
+
+    ![Events and State](events-state.png)
